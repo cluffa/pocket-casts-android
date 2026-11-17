@@ -271,7 +271,16 @@ subprojects {
 
     plugins.withType<BasePlugin>().configureEach {
         configure<CommonExtension> {
-            compileSdk = project.property("compileSdkVersion") as Int
+            // API 37 is a minor-version platform (latest stable: android-37.2).
+            // Minor versions need the compileSdk block DSL (AGP 9.4+); the
+            // plain `compileSdk = 37` form resolves platforms/android-37,
+            // which does not exist. Major level stays centralized in the
+            // compileSdkVersion property.
+            compileSdk {
+                version = release(project.property("compileSdkVersion") as Int) {
+                    minorApiLevel = 2
+                }
+            }
 
             with(compileOptions) {
                 isCoreLibraryDesugaringEnabled = true

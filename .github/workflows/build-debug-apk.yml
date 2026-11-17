@@ -39,7 +39,7 @@ jobs:
           # runner preinstalls the rest. Keyed on this workflow file, which
           # holds the package list, so a package change invalidates it.
           path: |
-            /usr/local/lib/android/sdk/platforms/android-37
+            /usr/local/lib/android/sdk/platforms/android-37.2
             /usr/local/lib/android/sdk/build-tools/37.0.0
           key: android-sdk-${{ runner.os }}-${{ hashFiles('.github/workflows/build-debug-apk.yml') }}
 
@@ -48,7 +48,11 @@ jobs:
           export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
           echo "Preinstalled platforms:"; ls "$ANDROID_HOME/platforms"
           yes | sdkmanager --licenses > /dev/null
-          yes | sdkmanager "platforms;android-37" "build-tools;37.0.0" "platform-tools"
+          # platforms;android-37.2 is NOT in Google's public SDK repo, so
+          # sdkmanager cannot fetch it; the runner image preinstalls it.
+          # Only attempt an install if it is missing (best effort).
+          [ -d "$ANDROID_HOME/platforms/android-37.2" ] || yes | sdkmanager "platforms;android-37.2" || true
+          yes | sdkmanager "build-tools;37.0.0" "platform-tools"
 
       - name: Set up Gradle
         # Caches the Gradle distribution, dependency cache
