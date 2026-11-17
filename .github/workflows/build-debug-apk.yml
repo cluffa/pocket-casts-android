@@ -32,11 +32,30 @@ jobs:
           distribution: temurin
           java-version: "21"
 
+      - name: Cache Android SDK components
+        uses: actions/cache@v4
+        with:
+          # Only the versioned components this workflow installs; the
+          # runner preinstalls the rest. Keyed on this workflow file, which
+          # holds the package list, so a package change invalidates it.
+          path: |
+            /usr/local/lib/android/sdk/platforms/android-36
+            /usr/local/lib/android/sdk/build-tools/36.0.0
+          key: android-sdk-${{ runner.os }}-${{ hashFiles('.github/workflows/build-debug-apk.yml') }}
+
       - name: Install SDK packages
         run: |
           export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
           yes | sdkmanager --licenses > /dev/null
           yes | sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - name: Set up Gradle
+        # Caches the Gradle distribution, dependency cache
+        # (caches/modules-2, transforms, jars), compiled build scripts,
+        # and the local build cache (caches/build-cache-1, which the
+        # project enables via org.gradle.caching=true). Keys are derived
+        # from the build files, so dependency changes invalidate them.
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Build debug APK
         run: ./gradlew :app:assembleDebugProd -PskipSentryProguardMappingUpload=true --stacktrace
