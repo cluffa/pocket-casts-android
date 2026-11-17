@@ -59,7 +59,7 @@ val getBuildPlatform = {
 project.apply {
     extra.apply {
         // Application
-        set("applicationId", "au.com.shiftyjelly.pocketcasts")
+        set("applicationId", "au.com.shiftyjelly.pocketcasts.fork")
 
         set("versionName", getVersionName())
         set("versionCode", getVersionCode())
@@ -74,7 +74,7 @@ project.apply {
         set("targetSdkVersionWear", 36)
         set("targetSdkVersionAutomotive", 35)
         set("targetSdkVersionTv", 36)
-        set("compileSdkVersion", 37)
+        set("compileSdkVersion", 36)
         set("testInstrumentationRunner", "androidx.test.runner.AndroidJUnitRunner")
 
         // App Signing

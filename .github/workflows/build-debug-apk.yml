@@ -1,0 +1,45 @@
+# Fork-only workflow: upstream builds on Buildkite (Automattic's private
+# agents), which the fork cannot use, so build the debug APK here.
+# Produces app/build/outputs/apk/debugProd/app-debugProd.apk with the
+# fork applicationId (au.com.shiftyjelly.pocketcasts.fork.debug).
+name: Build debug APK (fork)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # GitHub sets CI=true by default, but settings.gradle.kts uses CI=true
+      # to point Gradle at Automattic's internal remote build cache
+      # (10.0.2.214), unreachable from here. Force it off so the build
+      # runs without a remote cache.
+      CI: "false"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK packages
+        run: |
+          yes | sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - name: Build debug APK
+        run: ./gradlew :app:assembleDebugProd -PskipSentryProguardMappingUpload=true --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: pocket-casts-fork-debug-apk
+          path: app/build/outputs/apk/debugProd/*.apk
+          if-no-files-found: error
