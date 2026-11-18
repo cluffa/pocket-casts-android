@@ -61,6 +61,7 @@ class ExportSettingsPageTest {
                     onImportUrlClick = { clicks += "url" },
                     onExportEmailClick = { clicks += "email" },
                     onExportFileClick = { clicks += "save" },
+                    onExportHistoryClick = { clicks += "history" },
                 )
             }
         }

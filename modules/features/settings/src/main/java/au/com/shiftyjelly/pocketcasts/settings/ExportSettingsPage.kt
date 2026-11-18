@@ -31,6 +31,7 @@ internal fun ExportSettingsPage(
     onImportUrlClick: () -> Unit,
     onExportEmailClick: () -> Unit,
     onExportFileClick: () -> Unit,
+    onExportHistoryClick: () -> Unit,
     modifier: Modifier = Modifier,
     toolbarModifier: Modifier = Modifier,
 ) {
@@ -79,6 +80,14 @@ internal fun ExportSettingsPage(
                     title = stringResource(LR.string.settings_export_save_file),
                     summary = stringResource(LR.string.settings_export_save_file_summary),
                     onClick = onExportFileClick,
+                )
+            }
+            SettingSection(showDivider = false) {
+                SectionHeading(stringResource(LR.string.settings_listening_history))
+                ExportRow(
+                    title = stringResource(LR.string.settings_export_listening_history),
+                    summary = stringResource(LR.string.settings_export_listening_history_summary),
+                    onClick = onExportHistoryClick,
                 )
             }
         }

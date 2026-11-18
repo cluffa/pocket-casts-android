@@ -580,9 +580,7 @@ class PodcastAdapter(
             add(Podcast())
             add(TabsHeader(selectedTab = PodcastTab.BOOKMARKS, onTabClicked = onTabClicked))
 
-            if (!bookmarksAvailable) {
-                add(BookmarkUpsell)
-            } else if (searchTerm.isEmpty() && bookmarks.isEmpty()) {
+            if (bookmarksAvailable && searchTerm.isEmpty() && bookmarks.isEmpty()) {
                 val resources = context.resources
                 add(
                     EmptyList(

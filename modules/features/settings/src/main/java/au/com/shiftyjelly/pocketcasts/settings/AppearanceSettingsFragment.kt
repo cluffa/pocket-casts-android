@@ -88,7 +88,7 @@ class AppearanceSettingsFragment :
                     useDynamicColorsForWidget = useDynamicColorsForWidget,
                 ),
                 showWidgetSection = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
-                showUpgradeBanner = signInState?.isSignedInAsPlusOrPatron == false && !isUpgradeClosed,
+                showUpgradeBanner = false,
                 bottomInset = with(LocalDensity.current) { bottomInsetPx.toDp() },
                 listener = this,
                 themePicker = { ThemePicker() },

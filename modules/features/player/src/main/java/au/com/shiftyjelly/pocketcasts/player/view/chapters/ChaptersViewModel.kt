@@ -323,7 +323,7 @@ class ChaptersViewModel @AssistedInject constructor(
             canSkipChapters = subscription != null,
             showHeader = episode is PodcastEpisode,
             isGeneratedChaptersOff = chapters.hasHiddenGeneratedChapters,
-            showUpsell = subscription == null && chapters.isEmpty() && isGeneratedChaptersEpisode,
+            showUpsell = false,
             canGenerateChapters = subscription != null && isGeneratedChaptersEpisode,
             generatedChaptersStatus = generatedChaptersStatus,
         )

@@ -20,11 +20,13 @@ import au.com.shiftyjelly.pocketcasts.compose.extensions.contentWithoutConsumedI
 import au.com.shiftyjelly.pocketcasts.coroutines.di.ApplicationScope
 import au.com.shiftyjelly.pocketcasts.preferences.Settings
 import au.com.shiftyjelly.pocketcasts.repositories.opml.OpmlImportTask
+import au.com.shiftyjelly.pocketcasts.repositories.podcast.EpisodeManager
 import au.com.shiftyjelly.pocketcasts.repositories.podcast.PodcastManager
 import au.com.shiftyjelly.pocketcasts.repositories.sync.SyncManager
 import au.com.shiftyjelly.pocketcasts.servers.ServiceManager
 import au.com.shiftyjelly.pocketcasts.settings.viewmodel.ExportSettingsViewModel
 import au.com.shiftyjelly.pocketcasts.ui.theme.Theme
+import au.com.shiftyjelly.pocketcasts.views.helper.ListeningHistoryExporter
 import au.com.shiftyjelly.pocketcasts.views.helper.OpmlExporter
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -42,6 +44,8 @@ class ExportSettingsFragment : Fragment() {
 
     @Inject lateinit var podcastManager: PodcastManager
 
+    @Inject lateinit var episodeManager: EpisodeManager
+
     @Inject lateinit var theme: Theme
 
     @Inject lateinit var syncManager: SyncManager
@@ -51,6 +55,7 @@ class ExportSettingsFragment : Fragment() {
 
     private val viewModel by viewModels<ExportSettingsViewModel>()
     private var exporter: OpmlExporter? = null
+    private var historyExporter: ListeningHistoryExporter? = null
 
     private val importOpmlFilePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val activity = activity ?: return@registerForActivityResult
@@ -86,6 +91,14 @@ class ExportSettingsFragment : Fragment() {
                 onExportFileClick = {
                     viewModel.onExportFile()
                     exporter = createExporter().apply { saveFile() }
+                },
+                onExportHistoryClick = {
+                    historyExporter = ListeningHistoryExporter(
+                        episodeManager = episodeManager,
+                        podcastManager = podcastManager,
+                        context = requireActivity(),
+                        applicationScope = applicationScope,
+                    ).apply { saveFile() }
                 },
                 toolbarModifier = Modifier.pointerInput(Unit) {
                     detectTapGestures(onLongPress = { theme.toggleDarkLightThemeActivity(requireActivity() as AppCompatActivity) })

@@ -1656,6 +1656,9 @@
     <string name="settings_developer">Developer</string>
     <string name="settings_downloads_clean_up">Clean up</string>
     <string name="settings_downloads_clean_up_summary">Are you sure you want to delete these downloaded files?</string>
+    <string name="settings_listening_history">Listening history</string>
+    <string name="settings_export_listening_history">Export listening history</string>
+    <string name="settings_export_listening_history_summary">Save a CSV file of the episodes you have played, with dates and listening progress.</string>
     <string name="settings_export_save_file">Save file</string>
     <string name="settings_export_save_file_summary">Export the OPML file to your storage.</string>
     <string name="settings_export_send_email">Send email</string>
