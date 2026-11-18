@@ -188,6 +188,10 @@ class EpisodeManagerImpl @Inject constructor(
         return episodeDao.findPlaybackHistoryEpisodes()
     }
 
+    override suspend fun findAllPlaybackHistoryEpisodes(): List<PodcastEpisode> {
+        return episodeDao.findAllPlaybackHistoryEpisodes()
+    }
+
     override fun updatePlayedUpToBlocking(episode: BaseEpisode?, playedUpTo: Double, forceUpdate: Boolean) {
         if (playedUpTo < 0 || episode == null) {
             return

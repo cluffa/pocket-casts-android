@@ -1659,6 +1659,8 @@
     <string name="settings_listening_history">Listening history</string>
     <string name="settings_export_listening_history">Export listening history</string>
     <string name="settings_export_listening_history_summary">Save a CSV file of the episodes you have played, with dates and listening progress.</string>
+    <string name="settings_export_listening_sessions">Export listening sessions</string>
+    <string name="settings_export_listening_sessions_summary">Save a CSV file of every individual play, with start times and time listened.</string>
     <string name="settings_export_save_file">Save file</string>
     <string name="settings_export_save_file_summary">Export the OPML file to your storage.</string>
     <string name="settings_export_send_email">Send email</string>

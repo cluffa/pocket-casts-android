@@ -32,6 +32,7 @@ internal fun ExportSettingsPage(
     onExportEmailClick: () -> Unit,
     onExportFileClick: () -> Unit,
     onExportHistoryClick: () -> Unit,
+    onExportSessionsClick: () -> Unit,
     modifier: Modifier = Modifier,
     toolbarModifier: Modifier = Modifier,
 ) {
@@ -88,6 +89,11 @@ internal fun ExportSettingsPage(
                     title = stringResource(LR.string.settings_export_listening_history),
                     summary = stringResource(LR.string.settings_export_listening_history_summary),
                     onClick = onExportHistoryClick,
+                )
+                ExportRow(
+                    title = stringResource(LR.string.settings_export_listening_sessions),
+                    summary = stringResource(LR.string.settings_export_listening_sessions_summary),
+                    onClick = onExportSessionsClick,
                 )
             }
         }

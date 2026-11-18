@@ -289,6 +289,11 @@ abstract class EpisodeDao {
     @Query("SELECT * FROM podcast_episodes WHERE last_playback_interaction_date IS NOT NULL AND last_playback_interaction_date > 0 ORDER BY last_playback_interaction_date DESC LIMIT 1000")
     abstract suspend fun findPlaybackHistoryEpisodes(): List<PodcastEpisode>
 
+    // Fork addition: same history query without the UI-oriented 1000-row cap, for the CSV exporter.
+    @Transaction
+    @Query("SELECT * FROM podcast_episodes WHERE last_playback_interaction_date IS NOT NULL AND last_playback_interaction_date > 0 ORDER BY last_playback_interaction_date DESC")
+    abstract suspend fun findAllPlaybackHistoryEpisodes(): List<PodcastEpisode>
+
     @Update
     abstract fun updateBlocking(episode: PodcastEpisode)
 

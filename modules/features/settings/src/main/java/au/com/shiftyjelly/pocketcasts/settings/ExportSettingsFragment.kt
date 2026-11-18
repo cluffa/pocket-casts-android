@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import au.com.shiftyjelly.pocketcasts.compose.AppTheme
 import au.com.shiftyjelly.pocketcasts.compose.extensions.contentWithoutConsumedInsets
 import au.com.shiftyjelly.pocketcasts.coroutines.di.ApplicationScope
+import au.com.shiftyjelly.pocketcasts.models.db.dao.PlaybackStatsDao
 import au.com.shiftyjelly.pocketcasts.preferences.Settings
 import au.com.shiftyjelly.pocketcasts.repositories.opml.OpmlImportTask
 import au.com.shiftyjelly.pocketcasts.repositories.podcast.EpisodeManager
@@ -45,6 +46,8 @@ class ExportSettingsFragment : Fragment() {
     @Inject lateinit var podcastManager: PodcastManager
 
     @Inject lateinit var episodeManager: EpisodeManager
+
+    @Inject lateinit var playbackStatsDao: PlaybackStatsDao
 
     @Inject lateinit var theme: Theme
 
@@ -93,12 +96,10 @@ class ExportSettingsFragment : Fragment() {
                     exporter = createExporter().apply { saveFile() }
                 },
                 onExportHistoryClick = {
-                    historyExporter = ListeningHistoryExporter(
-                        episodeManager = episodeManager,
-                        podcastManager = podcastManager,
-                        context = requireActivity(),
-                        applicationScope = applicationScope,
-                    ).apply { saveFile() }
+                    historyExporter = createHistoryExporter().apply { saveFile() }
+                },
+                onExportSessionsClick = {
+                    historyExporter = createHistoryExporter().apply { saveSessionsFile() }
                 },
                 toolbarModifier = Modifier.pointerInput(Unit) {
                     detectTapGestures(onLongPress = { theme.toggleDarkLightThemeActivity(requireActivity() as AppCompatActivity) })
@@ -106,6 +107,14 @@ class ExportSettingsFragment : Fragment() {
             )
         }
     }
+
+    private fun createHistoryExporter() = ListeningHistoryExporter(
+        episodeManager = episodeManager,
+        podcastManager = podcastManager,
+        playbackStatsDao = playbackStatsDao,
+        context = requireActivity(),
+        applicationScope = applicationScope,
+    )
 
     private fun createExporter() = OpmlExporter(
         fragment = this,

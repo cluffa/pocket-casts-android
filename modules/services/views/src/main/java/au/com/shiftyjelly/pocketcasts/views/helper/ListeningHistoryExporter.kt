@@ -4,6 +4,7 @@ package au.com.shiftyjelly.pocketcasts.views.helper
 
 import android.app.ProgressDialog
 import android.content.Context
+import au.com.shiftyjelly.pocketcasts.models.db.dao.PlaybackStatsDao
 import au.com.shiftyjelly.pocketcasts.models.type.EpisodePlayingStatus
 import au.com.shiftyjelly.pocketcasts.repositories.podcast.EpisodeManager
 import au.com.shiftyjelly.pocketcasts.repositories.podcast.PodcastManager
@@ -19,13 +20,14 @@ import timber.log.Timber
 import au.com.shiftyjelly.pocketcasts.localization.R as LR
 
 /**
- * Fork addition: exports the listening history (episodes with a recorded playback
- * interaction, most recent first) as a CSV file and hands it to the share sheet,
- * mirroring how [OpmlExporter] shares the OPML file.
+ * Fork addition: exports listening data as CSV files and hands them to the share
+ * sheet, mirroring how [OpmlExporter] shares the OPML file. Two exports:
+ * the full episode history (no 1000-row cap) and the per-play session events.
  */
 class ListeningHistoryExporter(
     private val episodeManager: EpisodeManager,
     private val podcastManager: PodcastManager,
+    private val playbackStatsDao: PlaybackStatsDao,
     private val context: Context,
     private val applicationScope: CoroutineScope,
 ) {
@@ -34,10 +36,18 @@ class ListeningHistoryExporter(
     private var progressDialog: ProgressDialog? = null
 
     fun saveFile() {
+        shareWhenReady { exportEpisodesCsv() }
+    }
+
+    fun saveSessionsFile() {
+        shareWhenReady { exportSessionsCsv() }
+    }
+
+    private fun shareWhenReady(buildCsv: suspend () -> File) {
         showProgressDialog()
         exportJob?.cancel()
         exportJob = applicationScope.launch {
-            val file = runCatching { exportCsv() }
+            val file = runCatching { buildCsv() }
                 .onFailure { Timber.e(it) }
                 .getOrNull()
                 ?.takeIf(File::exists)
@@ -57,14 +67,13 @@ class ListeningHistoryExporter(
         }
     }
 
-    private suspend fun exportCsv(): File {
-        val episodes = episodeManager.findPlaybackHistoryEpisodes()
+    private suspend fun exportEpisodesCsv(): File {
+        val episodes = episodeManager.findAllPlaybackHistoryEpisodes()
         val podcastTitles = episodes.map { it.podcastUuid }.distinct().associateWith { uuid ->
             podcastManager.findPodcastByUuid(uuid)?.title.orEmpty()
         }
 
-        val folder = File(context.filesDir, "email").apply { mkdirs() }
-        val file = File(folder, "listening_history.csv")
+        val file = File(exportFolder(), "listening_history.csv")
         file.bufferedWriter().use { writer ->
             writer.appendLine(
                 "podcast_title,episode_title,published_date,duration_seconds,played_up_to_seconds," +
@@ -96,6 +105,34 @@ class ListeningHistoryExporter(
         }
         return file
     }
+
+    private suspend fun exportSessionsCsv(): File {
+        val events = playbackStatsDao.selectAll().sortedBy { it.startedAtMs }
+        val episodeTitles = episodeManager.findByUuids(events.map { it.episodeUuid }.distinct())
+            .associateBy({ it.uuid }, { it.title })
+        val podcastTitles = events.map { it.podcastUuid }.distinct().associateWith { uuid ->
+            podcastManager.findPodcastByUuid(uuid)?.title.orEmpty()
+        }
+
+        val file = File(exportFolder(), "listening_sessions.csv")
+        file.bufferedWriter().use { writer ->
+            writer.appendLine("started_at,duration_listened_seconds,podcast_title,episode_title,episode_uuid,podcast_uuid")
+            for (event in events) {
+                val row = listOf(
+                    csvEscape(Instant.ofEpochMilli(event.startedAtMs).toString()),
+                    String.format(Locale.US, "%.1f", event.durationMs / 1000.0),
+                    csvEscape(podcastTitles[event.podcastUuid].orEmpty()),
+                    csvEscape(episodeTitles[event.episodeUuid].orEmpty()),
+                    event.episodeUuid,
+                    event.podcastUuid,
+                )
+                writer.appendLine(row.joinToString(","))
+            }
+        }
+        return file
+    }
+
+    private fun exportFolder(): File = File(context.filesDir, "email").apply { mkdirs() }
 
     private fun showProgressDialog() {
         UiUtil.hideProgressDialog(progressDialog)
